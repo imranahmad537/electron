@@ -3,13 +3,15 @@
 import { Routes, Route } from 'react-router-dom'
 import Dashboard from './UserComponents/Dashboard'
 import Admin from './AdminComponents/Admin'
-import User from './UserComponents/User'
+import User from './UserComponents/AddProduct'
 import Login from './components/Login'
 import AdminDashboardLayout from './AdminComponents/AdminDashboardLayout'
 import ProtectedRoute from '../../renderer/src/routes/ProtectedRoute'
-import Stock from './UserComponents/User'
+import Stock from './UserComponents/AddProduct'
 import UserDashboardLayout from './UserComponents/UserDashboardLayout'
 import AddOrders from './UserComponents/AddOrders'
+import ManageUser from './AdminComponents/ManageUsers'
+
 
 
 function App() {
@@ -30,6 +32,7 @@ function App() {
         >
           {/* child components of Admin Dashboard */}
           <Route index element={<Admin />} />
+          <Route path='manageUser' element={<ManageUser />} />
         </Route>
 
         {/* User Protected Route/ */}
@@ -48,7 +51,6 @@ function App() {
           <Route path='stock' element={<Stock/>}/>
         </Route>
       </Routes>
-   
   )
 }
 

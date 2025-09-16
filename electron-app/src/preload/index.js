@@ -14,6 +14,13 @@ if (process.contextIsolated) {
       addOrder: (order) => ipcRenderer.invoke("add-order", order),
       // get order
        getOrders: () => ipcRenderer.invoke("get-orders"), // fetch orders
+        addProduct: (product) => ipcRenderer.invoke("add-product", product),
+  getProducts: () => ipcRenderer.invoke("get-products"),
+
+    getUsers: () => ipcRenderer.invoke("get-users"),
+  addUser: (user) => ipcRenderer.invoke("add-user", user),
+  updateUser: (user) => ipcRenderer.invoke("update-user", user),
+  deleteUser: (id) => ipcRenderer.invoke("delete-user", id),
 
     })
   } catch (error) {

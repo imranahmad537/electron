@@ -65,7 +65,7 @@ export default function Login() {
       if (res.ok) {
         if (res.user.role === 'admin') {
           // navigate('/adminDashboardLayout')
-          navigate('/userDashboardLayout')
+          navigate('/adminDashboardLayout')
         } else {
           navigate('/userDashboardLayout')
         }

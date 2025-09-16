@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-const Sidebar = () => {
+const AdminSidebar = () => {
   return (
     <div className="bg-white rounded-3xl h-[97vh] w-60 p-4 flex flex-col shadow-lg">
       <h2 className="text-2xl font-bold text-blue-700 mb-8">Marble App</h2>
@@ -14,7 +14,7 @@ const Sidebar = () => {
         <Link to='order'>
        <li className="bg-blue-200 text-blue-800 px-4 py-2 rounded-xl cursor-pointer">Order</li>
        </Link>
-        <Link to='setting'>
+        <Link to='manageUser'>
        <li className="bg-blue-200 text-blue-800 px-4 py-2 rounded-xl cursor-pointer">Setting</li>
        </Link>
        <Link to='login'>
@@ -25,4 +25,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default AdminSidebar;

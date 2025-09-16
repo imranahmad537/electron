@@ -1,25 +1,22 @@
 import Database from 'better-sqlite3'
-import { fileURLToPath} from 'url';
+import { fileURLToPath } from 'url'
 import { app, dialog } from 'electron'
-import dotenv from 'dotenv';
-dotenv.config();
+import dotenv from 'dotenv'
+dotenv.config()
 
-import path from 'path';
+import path from 'path'
 import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
 
 let db
 // For __dirname replacement in ESM
-const __dbfilename = fileURLToPath(import.meta.url);
-const __dbdirname = path.dirname(__dbfilename);
-
-
+const __dbfilename = fileURLToPath(import.meta.url)
+const __dbdirname = path.dirname(__dbfilename)
 
 const myKey = process.env.APP_KEY
-console.log(myKey);
+console.log(myKey)
 
-
-const hashedKey = crypto.createHash('sha256').update(myKey).digest('hex');
+const hashedKey = crypto.createHash('sha256').update(myKey).digest('hex')
 
 export function initDb() {
   if (!db) {
@@ -29,28 +26,29 @@ export function initDb() {
     db.exec(`
   PRAGMA journal_mode = WAL;
 `)
-      db.exec(`
+    db.exec(`
 
 CREATE TABLE IF NOT EXISTS users (
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 username TEXT UNIQUE NOT NULL,
+email TEXT
 password_hash TEXT NOT NULL,
 role TEXT NOT NULL CHECK(role IN ('admin','user')),
 created_at TEXT DEFAULT (datetime('now'))
 );
-`);
-  
+`)
 
     //---------------------------------------
     db.prepare(
       `CREATE TABLE IF NOT EXISTS license_table(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         license_key TEXT NOT NULL)
-        `).run();
+        `
+    ).run()
 
-        
-        // customer_id - contact No
-        db.prepare(`
+    // customer_id - contact No
+    db.prepare(
+      `
           CREATE TABLE IF NOT EXISTS orders(
           
           order_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,11 +65,28 @@ created_at TEXT DEFAULT (datetime('now'))
           payment_status TEXT CHECK(payment_status IN ('PAID', 'PARTIAL')) NOT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )`
-        ).run()
-        //  payment_status TEXT CHECK(payment_status IN ('PAID', 'PARTIAL', 'UNPAID')) NOT NULL,
-    
+    ).run()
+    //  payment_status TEXT CHECK(payment_status IN ('PAID', 'PARTIAL', 'UNPAID')) NOT NULL,
+
     // Save fingerprint if not already saved
 
+   // product
+db.prepare(
+  `CREATE TABLE IF NOT EXISTS products (
+     product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+     name TEXT NOT NULL,
+     category TEXT,
+     unit_type TEXT CHECK(unit_type IN ('slab', 'sq_ft', 'sq_meter', 'piece')),
+     price_per_unit REAL NOT NULL,
+     length REAL,      -- only for slab/piece
+     width REAL,
+     thickness REAL,
+     stock_quantity INTEGER DEFAULT 0,
+     description TEXT
+   )`
+);
+
+    //----------------
     //---------------------------------------
     // create a simple table
     db.prepare(
@@ -83,33 +98,32 @@ created_at TEXT DEFAULT (datetime('now'))
         )
         `
     ).run()
-    const row = db.prepare('SELECT id FROM license_table LIMIT 1').get();
-    if(!row){
+    const row = db.prepare('SELECT id FROM license_table LIMIT 1').get()
+    if (!row) {
       db.prepare('INSERT INTO license_table (license_key) VALUES (?)').run(hashedKey)
-      console.log("Key stored successfully...");
+      console.log('Key stored successfully...')
     }
 
     const admin = db.prepare('SELECT id FROM users WHERE role = ? LIMIT 1').get('admin')
 
-  if (!admin) {
-    const username = 'admin' // change later
-    const password = 'admin' // change later
-    const hash = bcrypt.hashSync(password, 10)
-    db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?,?,?)').run(
-      username,
-      hash,
-      'admin'
-    )
-    console.log('[DB] Seeded default admin account: "admin"')
-  }
+    if (!admin) {
+      const username = 'admin' // change later
+      const password = 'admin' // change later
+      const hash = bcrypt.hashSync(password, 10)
+      db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?,?,?)').run(
+        username,
+        hash,
+        'admin'
+      )
+      console.log('[DB] Seeded default admin account: "admin"')
+    }
 
     // create Tables
 
     console.log('Database Connected Successfully at ', dbPath)
   }
-  return db;
+  return db
 }
-
 
 // db.js
 // export function checkLicenseKey(inputKey) {
@@ -127,37 +141,33 @@ created_at TEXT DEFAULT (datetime('now'))
 // }
 
 export function checkLicenseKey(inputKey) {
-  const row = db.prepare("SELECT license_key FROM license_table LIMIT 1").get();
+  const row = db.prepare('SELECT license_key FROM license_table LIMIT 1').get()
   if (!row) {
-    dialog.showErrorBox("Unauthorized", "License key not found. App will quit.");
-    app.quit();
-    return false;
+    dialog.showErrorBox('Unauthorized', 'License key not found. App will quit.')
+    app.quit()
+    return false
   }
-   const inputHash = crypto
-    .createHash("sha256")
-    .update(inputKey)
-    .digest("hex");
+  const inputHash = crypto.createHash('sha256').update(inputKey).digest('hex')
 
-    if(inputHash === row.license_key){
-      return true;// valid, proceed to login
-    }else{
-      dialog.showErrorBox("Unauthorized", "Invalid license key.")
-      app.quit()
-      return false;
-    }
-
+  if (inputHash === row.license_key) {
+    return true // valid, proceed to login
+  } else {
+    dialog.showErrorBox('Unauthorized', 'Invalid license key.')
+    app.quit()
+    return false
+  }
 }
 // Function to get machine fingerprint
-    // function getMachineFingerprint() {
-    //     const SALT = "wewillmeet"
-    //   const macs = Object.values(os.networkInterfaces())
-    //     .flat()
-    //     .filter((nic) => nic && !nic.internal && nic.mac !== '00:00:00:00:00:00')
-    //     .map((nic) => nic.mac)
-    //     .join('-')
+// function getMachineFingerprint() {
+//     const SALT = "wewillmeet"
+//   const macs = Object.values(os.networkInterfaces())
+//     .flat()
+//     .filter((nic) => nic && !nic.internal && nic.mac !== '00:00:00:00:00:00')
+//     .map((nic) => nic.mac)
+//     .join('-')
 
-    //   return crypto.createHash('sha256').update(SALT + macs).digest('hex')
-    // }
+//   return crypto.createHash('sha256').update(SALT + macs).digest('hex')
+// }
 // export function checkLicense() {
 //   const currentFingerprint = getMachineFingerprint()
 //   const row = db.prepare('SELECT fingerprint FROM license LIMIT 1').get()

@@ -335,3 +335,85 @@ ipcMain.handle("get-orders", () => {
 // export function getOrder(){
 //   return db.prepare('SELECT * FROM orders').all()
 // }
+
+// Add new product
+// add product
+ipcMain.handle("add-product", (event, product) => {
+  const stmt = db.prepare(`
+    INSERT INTO products 
+      (name, category, unit_type, price_per_unit, length, width, thickness, stock_quantity, description)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  stmt.run(
+    product.name,
+    product.category,
+    product.unit_type,
+    product.price_per_unit,
+    product.length,
+    product.width,
+    product.thickness,
+    product.stock_quantity,
+    product.description
+  );
+
+  return { success: true };
+});
+
+// get products
+ipcMain.handle("get-products", () => {
+  const stmt = db.prepare(`SELECT * FROM products ORDER BY product_id DESC`);
+  const rows = stmt.all();
+  return rows;
+});
+
+
+
+
+// Get users
+ipcMain.handle("get-users", async () => {
+  return new Promise((resolve, reject) => {
+    db.all("SELECT * FROM users", [], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+});
+
+// Add user
+ipcMain.handle("add-user", async (event, user) => {
+  return new Promise((resolve, reject) => {
+    db.prepare(
+      "INSERT INTO users (username, email) VALUES (?, ?)",
+      [user.name, user.email],
+      function (err) {
+        if (err) reject(err);
+        else resolve({ id: this.lastID, ...user });
+      }
+    );
+  });
+});
+
+// Update user
+ipcMain.handle("update-user", async (event, user) => {
+  return new Promise((resolve, reject) => {
+    db.run(
+      "UPDATE users SET username=?, email=? WHERE id=?",
+      [user.name, user.email, user.id],
+      function (err) {
+        if (err) reject(err);
+        else resolve(user);
+      }
+    );
+  });
+});
+
+// Delete user
+ipcMain.handle("delete-user", async (event, id) => {
+  return new Promise((resolve, reject) => {
+    db.run("DELETE FROM users WHERE id=?", [id], function (err) {
+      if (err) reject(err);
+      else resolve({ success: true });
+    });
+  });
+});
