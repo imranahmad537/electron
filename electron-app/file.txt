@@ -1,0 +1,95 @@
+// "main": "./out/main/index.js",
+-- Get all full payments
+SELECT * FROM orders WHERE payment_status = 'full';
+
+-- Get all partial payments
+SELECT * FROM orders WHERE payment_status = 'partial';
+
+-- Get pending balances
+SELECT id, total_amount - paid_amount AS due FROM orders WHERE payment_status = 'partial';
+
+
+------------
+
+
+Logic
+
+Full Payment
+
+paid_amount === total_amount
+
+payment_status = 'full'
+
+Partial Payment
+
+paid_amount < total_amount
+
+payment_status = 'partial'
+
+
+
+
+
+-------------
+Logic here:
+
+If payment_status = 'FULL': paid_amount = total_amount, remaining_amount = 0.
+
+If payment_status = 'PARTIAL': paid_amount < total_amount, remaining_amount = total_amount - paid_amount
+
+--------------
+
+
+CREATE TABLE orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customer_name TEXT NOT NULL,
+    marble_type TEXT NOT NULL,
+    total_amount REAL NOT NULL,
+    paid_amount REAL NOT NULL,
+    remaining_amount REAL NOT NULL,
+    payment_status TEXT CHECK(payment_status IN ('FULL', 'PARTIAL')) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+{/* {orders.length > 0 ? (
+                orders.map((o) => (
+                  <tr
+                    key={o.id}
+                    className="border-b hover:bg-gray-50 transition"
+                  >
+                    <td className="px-4 py-3">{o.customer}</td>
+                    <td className="px-4 py-3">{o.marble}</td>
+                    <td className="px-4 py-3">{o.qty}</td>
+                    <td className="px-4 py-3 font-medium">
+                      ${o.total.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3 text-green-600">
+                      ${o.paid.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3 text-red-600">
+                      ${o.remaining.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                          o.status === "FULL"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        {o.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="7"
+                    className="px-4 py-6 text-center text-gray-500"
+                  >
+                    No orders found.
+                  </td>
+                </tr>
+              )} */}
